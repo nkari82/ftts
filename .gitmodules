@@ -1,0 +1,16 @@
+[submodule "thirdparty/mecab"]
+	path = thirdparty/mecab
+	url = https://github.com/nkari82/mecab.git
+	branch = master
+[submodule "thirdparty/utf8proc"]
+	path = thirdparty/utf8proc
+	url = https://github.com/JuliaStrings/utf8proc.git
+	branch = master
+[submodule "thirdparty/uchardet"]
+	path = thirdparty/uchardet
+	url = https://gitlab.freedesktop.org/uchardet/uchardet.git
+	branch = master
+[submodule "thirdparty/iconv"]
+	path = thirdparty/iconv
+	url = https://github.com/nkari82/iconv.git
+	branch = master

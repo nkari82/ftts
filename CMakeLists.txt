@@ -8,18 +8,22 @@ cmake_host_system_information(RESULT _platform QUERY OS_PLATFORM)
 message(STATUS "OS: " ${_os})
 message(STATUS "Platform: " ${_platform})
 
-if( MSVC )
- set (CMAKE_C_FLAGS "-D__AVX__")
- set (CMAKE_CXX_FLAGS "/std:c++17 /GR -D__AVX__")
-else()
- set (CMAKE_C_FLAGS "-O3 -g -mavx -mfma")
- set (CMAKE_CXX_FLAGS "-std=c++17 -O3 -g -mavx -mfma")
-endif()
 
-if( MSVC )
-  add_compile_options( "/EHsc" )
-  add_compile_options( "/sdl-" )
-endif()
+add_subdirectory(./thirdparty/iconv)
+list(APPEND EXTRA_LIBS iconv)
+list(APPEND EXTRA_INCLUDES "./thirdparty/iconv/include")
+
+add_subdirectory(./thirdparty/mecab/mecab)
+list(APPEND EXTRA_LIBS mecab)
+list(APPEND EXTRA_INCLUDES "./thirdparty/mecab/mecab/src")
+
+add_subdirectory(./thirdparty/uchardet)
+list(APPEND EXTRA_LIBS uchardet)
+list(APPEND EXTRA_INCLUDES "./thirdparty/uchardet/src")
+
+add_subdirectory(./thirdparty/utf8proc)
+list(APPEND EXTRA_LIBS utf8proc)
+list(APPEND EXTRA_INCLUDES "./thirdparty/utf8proc")
 
 add_library(ftts STATIC
 	src/ftts.cpp)
