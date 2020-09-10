@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.10.2)
-
 project(ftts)
 
 cmake_host_system_information(RESULT _os QUERY OS_NAME)
@@ -8,17 +7,22 @@ cmake_host_system_information(RESULT _platform QUERY OS_PLATFORM)
 message(STATUS "OS: " ${_os})
 message(STATUS "Platform: " ${_platform})
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory(./thirdparty/iconv)
-list(APPEND EXTRA_LIBS iconv)
-list(APPEND EXTRA_INCLUDES "./thirdparty/iconv/include")
+option(BUILD_BINARY FORCE OFF)
+option(BUILD_SHARED_LIBS FORCE OFF)
+
+add_subdirectory(./thirdparty/libiconv)
+list(APPEND EXTRA_LIBS libiconv)
+list(APPEND EXTRA_INCLUDES "./thirdparty/libiconv/include")
 
 add_subdirectory(./thirdparty/mecab/mecab)
 list(APPEND EXTRA_LIBS libmecab)
 list(APPEND EXTRA_INCLUDES "./thirdparty/mecab/mecab/src")
 
 add_subdirectory(./thirdparty/uchardet)
-list(APPEND EXTRA_LIBS uchardet)
+list(APPEND EXTRA_LIBS libuchardet)
 list(APPEND EXTRA_INCLUDES "./thirdparty/uchardet/src")
 
 add_subdirectory(./thirdparty/utf8proc)
