@@ -14,7 +14,7 @@ list(APPEND EXTRA_LIBS iconv)
 list(APPEND EXTRA_INCLUDES "./thirdparty/iconv/include")
 
 add_subdirectory(./thirdparty/mecab/mecab)
-list(APPEND EXTRA_LIBS mecab)
+list(APPEND EXTRA_LIBS libmecab)
 list(APPEND EXTRA_INCLUDES "./thirdparty/mecab/mecab/src")
 
 add_subdirectory(./thirdparty/uchardet)
@@ -25,6 +25,9 @@ add_subdirectory(./thirdparty/utf8proc)
 list(APPEND EXTRA_LIBS utf8proc)
 list(APPEND EXTRA_INCLUDES "./thirdparty/utf8proc")
 
-add_library(ftts STATIC
-	src/ftts.cpp)
+add_library(ftts STATIC src/ftts.cpp)
 target_include_directories(ftts PUBLIC ./include PRIVATE ./src)
+
+add_executable (example src/example.cpp)
+target_include_directories(example PRIVATE ./include ./src ${EXTRA_INCLUDES})
+target_link_libraries (example LINK_PUBLIC ftts ${EXTRA_LIBS})
