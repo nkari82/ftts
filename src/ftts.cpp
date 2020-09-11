@@ -1,9 +1,10 @@
 #include "ftts.h"
+#define LIBICONV_STATIC
+#define UTF8PROC_STATIC
 #include <unordered_map>
 #include <cassert>
-#include <iconv.h>
 #include <uchardet.h>
-#define UTF8PROC_STATIC
+#include <iconv.h>
 #include <utf8proc.h>
 
 namespace ftts
