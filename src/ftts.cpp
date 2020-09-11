@@ -74,7 +74,7 @@ namespace ftts
 				char* dst_ptr = &out[pos];
 				size_t dst_size = buf_size;
 
-				size_t res = ::iconv(cd, &src_ptr, &src_size, &dst_ptr, &dst_size);
+				size_t res = ::iconv(cd, (const char**)&src_ptr, &src_size, &dst_ptr, &dst_size);
 				if (res == (size_t)-1)
 				{
 					if (errno == E2BIG)
@@ -83,7 +83,7 @@ namespace ftts
 					}
 					else
 					{
-						fprintf(stderr, "Failed Convert Encoding: {}", errno);
+						fprintf(stderr, "Failed Convert Encoding: %d", errno);
 					}
 				}
 				size_t length = buf_size - dst_size;
