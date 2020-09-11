@@ -15,7 +15,7 @@ option(BUILD_SHARED_LIBS FORCE OFF)
 
 add_subdirectory(./thirdparty/libiconv)
 list(APPEND EXTRA_LIBS libiconv)
-list(APPEND EXTRA_INCLUDES "./thirdparty/libiconv/include")
+list(APPEND EXTRA_INCLUDES "${ftts_BINARY_DIR}/thirdparty/libiconv")
 
 add_subdirectory(./thirdparty/mecab/mecab)
 list(APPEND EXTRA_LIBS libmecab)
@@ -30,8 +30,8 @@ list(APPEND EXTRA_LIBS utf8proc)
 list(APPEND EXTRA_INCLUDES "./thirdparty/utf8proc")
 
 add_library(ftts STATIC src/ftts.cpp)
-target_include_directories(ftts PUBLIC ./include PRIVATE ./src)
+target_include_directories(ftts PUBLIC ./include PRIVATE ./src ${EXTRA_INCLUDES})
 
 add_executable (example src/example.cpp)
-target_include_directories(example PRIVATE ./include ./src ${EXTRA_INCLUDES})
+target_include_directories(example PRIVATE ./include ./src)
 target_link_libraries (example LINK_PUBLIC ftts ${EXTRA_LIBS})
