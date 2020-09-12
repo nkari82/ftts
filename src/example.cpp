@@ -6,6 +6,16 @@ int main()
 {
 	IProcessor::Ptr ptr = IProcessor::Create();
 	std::vector<int32_t> seq;
-	ptr->ToSeq("ддоб", seq);
+	// EUC-JP	X
+	// SHIFT_JIS
+	// ISO-2022-JP	X
+	// WINDOWS-1251
+	// WINDOWS-1252
+
+	//ptr->ToSeq("ЊГЊШЊтЊЄЁЃ", seq, "SHIFT_JIS");
+	//ptr->ToSeq("ЊГЊШЊтЊЄЁЃ", seq, "WINDOWS-1251");
+	ptr->ToSeq("ЊоЊПддобЊЮЊшЊІЊЫчщгойЅшнЊШћМЊаЊьЊыёЋщЉЊЪйЅшнЊЮёщфчЊЫлеЊЕЊьЊыЊГЊШЊтв§ЊЄЁЃ", seq, "EUC_JP");
+	//ptr->ToSeq("ЊоЊПддобЊЮЊшЊІЊЫчщгойЅшнЊШћМЊаЊьЊыёЋщЉЊЪйЅшнЊЮёщфчЊЫлеЊЕЊьЊыЊГЊШЊтв§ЊЄЁЃ", seq, "EUC-KR");
+
 	return 0;
 }

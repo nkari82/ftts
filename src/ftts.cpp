@@ -18,15 +18,12 @@ namespace ftts
 	private:
 		using Encodings = std::unordered_map<size_t, iconv_t>;
 		Encodings	encodings_;
-		char*			charset_;
 		uchardet*		ud_;
 
 	public:
-		Processor() : charset_(nullptr)
+		Processor()
 		{
 			ud_ = uchardet_new();
-			if (charset_ != nullptr)
-				free(charset_);
 		}
 
 		virtual ~Processor()
@@ -36,21 +33,25 @@ namespace ftts
 
 		const char* Detect(const char* text, size_t length)
 		{
-			if (charset_ != nullptr)
-				free(charset_);
-
 			uchardet_reset(ud_);
 			int ret = uchardet_handle_data(ud_, text, length);
 			uchardet_data_end(ud_);
-			charset_ = (char*)uchardet_get_charset(ud_);
-			return charset_;
+			return (char*)uchardet_get_charset(ud_);
 		}
 
 		void ConvertUTF8(std::string& out, const char* text, const char* enc = nullptr)
 		{
 			size_t length = std::strlen(text);
+
+			const char* detect = Detect(text, length);
 			if( enc == nullptr)
 				enc = Detect(text, length);
+
+			if (std::strlen(enc) == 0)
+			{
+				out = text;
+				return;
+			}
 
 			// to unicode
 			size_t hash = std::hash<const char*>{}(enc);
@@ -58,23 +59,23 @@ namespace ftts
 			auto it = encodings_.find(hash);
 			if (it == encodings_.end())
 			{
-				cd = iconv_open("utf-8", enc);
+				cd = iconv_open("UTF-8", enc);
 				encodings_.emplace(std::make_pair(hash, cd));
 			}
 
-			size_t buf_size(256);
+			size_t bufsize(256);
 			out.clear();
-			out.resize(buf_size);
+			out.resize(bufsize);
 
-			char* src_ptr = const_cast<char*>(text);
-			size_t src_size = length;
+			char* inptr = const_cast<char*>(text);
+			size_t insize = length;
 			size_t pos = 0;
-			while (0 < src_size)
+			while (0 < insize)
 			{
-				char* dst_ptr = &out[pos];
-				size_t dst_size = buf_size;
+				char* outptr = &out[pos];
+				size_t outsize = bufsize;
 
-				size_t res = ::iconv(cd, (const char**)&src_ptr, &src_size, &dst_ptr, &dst_size);
+				size_t res = ::iconv(cd, (const char**)&inptr, &insize, &outptr, &outsize);
 				if (res == (size_t)-1)
 				{
 					if (errno == E2BIG)
@@ -86,14 +87,16 @@ namespace ftts
 						fprintf(stderr, "Failed Convert Encoding: %d", errno);
 					}
 				}
-				size_t length = buf_size - dst_size;
+				size_t length = bufsize - outsize;
 				pos += length;
-				buf_size -= (length - src_size);
-				out.append(dst_ptr);
-				out.resize(pos + src_size);			// fit
+				bufsize -= (length - insize);
+				out.append(outptr);
+				out.resize(pos + insize);			// fit
 
-				assert(src_size == 0);
+				assert(insize == 0);
 			}
+
+			int temp = 0;
 		}
 	};
 
@@ -112,21 +115,22 @@ namespace ftts
 		{
 			int32_t seq(0);
 
-			// for katakana
+			// for katakana  ( U+30A0..U+30FF (96 code points) )
 			int32_t cp = 0x30A0;
 			for (; cp <= 0x30FF; cp++, seq++)
 				symbols_.emplace(std::make_pair(cp, seq));
+
+			// for hiragana ( U+3040..U+309F )
 		}
 
-		void ToSeq(const char* text, std::vector<int32_t>& seq) override
+		void ToSeq(const char* text, std::vector<int32_t>& seq, const char* enc) override
 		{
 			std::string out;
-			ConvertUTF8(out, text);
+			ConvertUTF8(out, text, enc);
 
 			utf8proc_int32_t cp = 0;
 			const utf8proc_uint8_t* pstring = reinterpret_cast<const utf8proc_uint8_t*>(&out.front());
-			const utf8proc_uint8_t* pend = reinterpret_cast<const utf8proc_uint8_t*>(pstring + out.size());
-			utf8proc_ssize_t size = pend - pstring;
+			utf8proc_ssize_t size = out.size();
 			utf8proc_ssize_t n(0);
 			while ((n = utf8proc_iterate(pstring, size, &cp)) > 0)
 			{
