@@ -11,6 +11,6 @@ namespace ftts
 		virtual ~IProcessor() = default;
 		virtual void ToSeq(const char* text, std::vector<int32_t>& seq, const char* enc = nullptr) = 0;
 
-		static Ptr Create(const char* processor = nullptr);
+		static Ptr Create(const char* args = nullptr, const char* processor = nullptr);
 	};
 }
