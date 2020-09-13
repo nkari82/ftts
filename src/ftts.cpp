@@ -8,6 +8,7 @@
 #include <iconv.h>
 #include <utf8proc.h>
 #include <mecab.h>
+#include <cstring>
 
 namespace ftts
 {
@@ -39,6 +40,7 @@ namespace ftts
 		void ToUnicode(std::vector<int32_t>& out, const char* text, const char* enc = nullptr)
 		{
 			size_t length = std::strlen(text);
+
 			if( enc == nullptr)
 				enc = Detect(text, length);
 
@@ -46,7 +48,7 @@ namespace ftts
 			std::string utf8;
 			utf8.resize(bufsize);
 
-			if (std::strlen(enc) == 0)
+			if (std::strlen(enc) == 0 || !std::strcmp(enc, "UTF-8"))
 			{
 				utf8 = text;
 			}
