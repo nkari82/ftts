@@ -16,6 +16,8 @@
 
 namespace ftts
 {
+	// https://mothereff.in/utf-8
+	// https://onlineutf8tools.com/convert-utf32-to-utf8
 	// https://unicodelookup.com/
 	using UString = std::basic_string<int32_t>;
 
@@ -151,58 +153,95 @@ namespace ftts
 		}
 	};
 
+#define b1(a) (char)a
+#define b2(a, b) (char)a, (char)b
+#define b3(a, b, c) (char)a, (char)b, (char)c
 	class JSProcessor : public Processor
 	{
 	private:
 		int32_t eos_;
 
 		MeCab::Tagger* tagger_;
-		std::vector<int32_t> punctuation_;
-		std::vector<int32_t> cleaner_;
-		std::vector<std::pair<UString, UString>> normalize_;
+
+		std::vector<std::string> punctuation_;
+		std::vector<std::string> cleaner_;
+		std::vector<std::pair<std::string, std::string>> normalize_;	
 		
 	public:
 		JSProcessor(const char* args)
 			: eos_(0xffffffff)
 			, tagger_(MeCab::createTagger(args))
-			, punctuation_{ 0x2e,0x2c,0x3001,0x3002,0xff01,0xff1f,0x21,0x3f }	 // ".,、。！？!?"
-			, cleaner_{ 0x20,0x3000,0x300c,0x300d,0x300e,0x300f,0x3f,0x3010,0x3011,0xff08,0xff09,0x28,0x29 } // " 　「」『』・【】（）()"
+			, punctuation_
+			{ 
+				{b1(0x2e)}, // "."
+				{b1(0x2c)}, // ","
+				{b3(0xe3,0x80,0x81)}, // "、"
+				{b3(0xe3,0x80,0x82)}, // "。"
+				{b3(0xef,0xbc,0x81)}, // "！"
+				{b3(0xef,0xbc,0x9f)}, // "？"
+				{b1(0x21)}, // "!"
+				{b1(0x3f)} // "?"
+			}	
+			, cleaner_	
+			{ 
+				{b1(0x20)},  // " "
+				{b3(0xe3,0x80,0x80)}, // "　"
+				{b3(0xe3,0x80,0x8c)}, // "「"
+				{b3(0xe3,0x80,0x8d)}, // "」"
+				{b3(0xe3,0x80,0x8e)}, // "『"
+				{b3(0xe3,0x80,0x8f)}, // "』"
+				{b1(0x3f)}, // "・"
+				{b3(0xe3,0x80,0x90)}, // "【"
+				{b3(0xe3,0x80,0x91)}, // "】"
+				{b3(0xef,0xbc,0x88)}, // "（"
+				{b3(0xef,0xbc,0x89)}, // "）"
+				{b1(0x28)}, // "("
+				{b1(0x29)} // ")"
+			}
 			, normalize_
 			{
-				{{0x301C}, {0x30FC}},			// replace('〜', 'ー')
-				{{0xFF5E}, {0x30FC}},			// replace('～', 'ー')
-				{{0x2019}, {0x27}},			// replace("’", "'")
-				{{0x201D}, {0x22}},			// replace('”', '"')
-				{{0x201C}, {0x60, 0x60}},		// replace('“', '``')
-				{{0x2D7}, {0x2D}},			// replace('˗', '-')
-				{{0x58A}, {0x2D}},			// replace('֊', '-')
-				{{0x2010}, {0x2D}},			// replace('‐', '-')
-				{{0x2011}, {0x2D}},			// replace('‑', '-')
-				{{0x2012}, {0x2D}},			// replace('‒', '-')
-				{{0x2013}, {0x2D}},			// replace('–', '-')
-				{{0x2043}, {0x2D}},			// replace('⁃', '-')
-				{{0x207B}, {0x2D}},			// replace('⁻', '-')
-				{{0x208B}, {0x2D}},			// replace('₋', '-')
-				{{0x2212}, {0x2D}},			// replace('−', '-')
-				{{0xFE63}, {0x30FC}},			// replace('﹣', 'ー')
-				{{0xFF0D}, {0x30FC}},			// replace('－', 'ー')
-				{{0x2014}, {0x30FC}},			// replace('—', 'ー')
-				{{0x2015}, {0x30FC}},			// replace('―', 'ー')
-				{{0x2501}, {0x30FC}},			// replace('━', 'ー')
-				{{0x2500}, {0x30FC}},			// replace('─', 'ー')
-				{{0x2C}, {0x3001}},			// replace(',', '、')
-				{{0x2E}, {0x3002}},			// replace('.', '。')
-				{{0xFF0C}, {0x3001}},			// replace('，', '、')
-				{{0xFF0E}, {0x3002}},			// replace('．', '。')
-				{{0x21}, {0xFF01}},			// replace('!', '！')
-				{{0x3F}, {0xFF01}}				// replace('?', '？')
+				{{b3(0xe3,0x80,0x9c)}, {b3(0xe3,0x83,0xbc)}}, // replace('〜', 'ー')
+				{{b3(0xef,0xbd,0x9e)}, {(char)0xe3,(char)0x83,(char)0xbc}}, // replace('～', 'ー')
+				{{b3(0xe2,0x80,0x99)}, {(char)0x27}}, // replace("’", "'")
+				{{b3(0xe2,0x80,0x9d)}, {(char)0x22}}, // replace('”', '"')
+				{{b3(0xe2,0x80,0x9c)}, {(char)0x60,(char)0x60}}, // replace('“', '``')
+				{{b2(0xcb,0x97)}, {(char)0x2d}}, // replace('˗', '-')
+				{{b2(0xd6,0x8a)}, {(char)0x2d}}, // replace('֊', '-')
+				{{b3(0xe2,0x80,0x90)}, {(char)0x2d}}, // replace('‐', '-')
+				{{b3(0xe2,0x80,0x91)}, {(char)0x2d}}, // replace('‑', '-')
+				{{b3(0xe2,0x80,0x92)}, {(char)0x2d}}, // replace('‒', '-')
+				{{b3(0xe2,0x80,0x93)}, {(char)0x2d}}, // replace('–', '-')
+				{{b3(0xe2,0x81,0x83)}, {(char)0x2d}}, // replace('⁃', '-')
+				{{b3(0xe2,0x81,0xbb)}, {(char)0x2d}}, // replace('⁻', '-')
+				{{b3(0xe2,0x82,0x8b)}, {(char)0x2d}}, // replace('₋', '-')
+				{{b3(0xe2,0x88,0x92)}, {(char)0x2d}}, // replace('−', '-')
+				{{b3(0xef,0xb9,0xa3)}, {(char)0xe3,(char)0x83,(char)0xbc}}, // replace('﹣', 'ー')
+				{{b3(0xef,0xbc,0x8d)}, {(char)0xe3,(char)0x83,(char)0xbc}}, // replace('－', 'ー')
+				{{b3(0xe2,0x80,0x94)}, {(char)0xe3,(char)0x83,(char)0xbc}}, // replace('—', 'ー')
+				{{b3(0xe2,0x80,0x95)}, {(char)0xe3,(char)0x83,(char)0xbc}}, // replace('―', 'ー')
+				{{b3(0xe2,0x94,0x81)}, {(char)0xe3,(char)0x83,(char)0xbc}}, // replace('━', 'ー')
+				{{b3(0xe2,0x94,0x80)}, {(char)0xe3,(char)0x83,(char)0xbc}}, // replace('─', 'ー')
+				{{b1(0x2c)}, {(char)0xe3,(char)0x80,(char)0x81}}, // replace(',', '、')
+				{{b1(0x2e)}, {(char)0xe3,(char)0x80,(char)0x82}}, // replace('.', '。')
+				{{b3(0xef,0xbc,0x8c)}, {(char)0xe3,(char)0x80,(char)0x81}}, // replace('，', '、')
+				{{b3(0xef,0xbc,0x8e)}, {(char)0xe3,(char)0x80,(char)0x82}}, // replace('．', '。')
+				{{b1(0x21)}, {(char)0xef,(char)0xbc,(char)0x81}}, // replace('!', '！')
+				{{b1(0x3f)}, {(char)0xef,(char)0xbc,(char)0x81}}	// replace('?', '？')
 			}
 		{
+			// generate symbols (UTF32)
+
 			// pad 
 			int32_t seq(1);
 
 			for (size_t i = 0; i < punctuation_.size(); i++, seq++)
-				symbols_.emplace(std::make_pair(punctuation_[i], seq));
+			{
+				const utf8proc_uint8_t* pstring = reinterpret_cast<const utf8proc_uint8_t*>(&punctuation_[i].front());
+				utf8proc_ssize_t size = punctuation_[i].size();
+				utf8proc_int32_t cp = 0;
+				for (utf8proc_ssize_t n = 0; (n = utf8proc_iterate(pstring, size, &cp)) > 0; pstring += n, size -= n)
+					symbols_.emplace(std::make_pair(cp, seq));
+			}
 			
 			// katakana ( U+30A0..U+30FF ), hiragana ( U+3040..U+309F )
 			for (int32_t cp = 0x30A0; cp <= 0x30FF; cp++, seq++)
@@ -230,17 +269,19 @@ namespace ftts
 		{
 			UString unicode;
 			ToUnicode(unicode, text, enc);
+			// ToUTF8
+			// ToUTF32
 			
 			// cleaner
-			for (auto& c : cleaner_)
-				std::remove(unicode.begin(), unicode.end(), c);
-			
-			// normalize
-			for (auto& pair : normalize_)
-				Replace(unicode, pair.first, pair.second);
+			//for (auto& c : cleaner_)
+			//	std::remove(unicode.begin(), unicode.end(), c);
+			//
+			//// normalize
+			//for (auto& pair : normalize_)
+			//	Replace(unicode, pair.first, pair.second);
 
-			size_t length = utf8proc_normalize_utf32((utf8proc_int32_t*)unicode.c_str(), unicode.length(), NFKC);
-			unicode.resize(length);
+			//size_t length = utf8proc_normalize_utf32((utf8proc_int32_t*)unicode.c_str(), unicode.length(), NFKC);
+			//unicode.resize(length);
 		}
 	};
 
