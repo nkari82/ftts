@@ -12,9 +12,13 @@
 #include <list>
 #include <algorithm>
 #include <iostream>
+#include <cctype>
 
 namespace ftts
 {
+	// https://unicodelookup.com/
+	using UString = std::basic_string<int32_t>;
+
 	static utf8proc_option_t NFKC = utf8proc_option_t(0
 			|UTF8PROC_NULLTERM
 			|UTF8PROC_STABLE
@@ -22,10 +26,6 @@ namespace ftts
 			|UTF8PROC_COMPAT
 			|UTF8PROC_CASEFOLD
 			|UTF8PROC_IGNORE);
-
-	// https://unicodelookup.com/
-	using UString = std::basic_string<int32_t>;
-	
 
 	class Processor : public IProcessor
 	{
@@ -43,6 +43,7 @@ namespace ftts
 		{
 			ud_ = uchardet_new();
 		}
+
 		virtual ~Processor()
 		{
 			uchardet_delete(ud_);
@@ -59,14 +60,18 @@ namespace ftts
 				enc = Detect(text, length);
 
 			size_t bufsize(256);
-			std::string utf8;
-			utf8.resize(bufsize);
+			std::string str;
+			str.resize(bufsize);
 
-			//std::stricmp()
+			const char* utf8 = "UTF-8";
+			bool is_utf8 = std::equal(enc, enc+std::strlen(enc), utf8, utf8+std::strlen(utf8), [](char a, char b)
+			{ 
+				return std::tolower(a) == std::tolower(b);
+			});
 
-			if (std::strlen(enc) == 0 || !std::strcmp(enc, "UTF-8"))
+			if (std::strlen(enc) == 0 || is_utf8)
 			{
-				utf8 = text;
+				str = text;
 			}
 			else
 			{
@@ -89,7 +94,7 @@ namespace ftts
 				size_t pos = 0;
 				while (0 < insize)
 				{
-					char* outptr = &utf8[pos];
+					char* outptr = &str[pos];
 					size_t outsize = bufsize;
 
 					size_t res = ::iconv(cd, (const char**)&inptr, &insize, &outptr, &outsize);
@@ -107,15 +112,15 @@ namespace ftts
 					size_t length = bufsize - outsize;
 					pos += length;
 					bufsize -= (length - insize);
-					utf8.append(outptr);
-					utf8.resize(pos + insize);			// fit
+					str.append(outptr);
+					str.resize(pos + insize);			// fit
 					assert(insize == 0);
 				}
 			}
 
 			utf8proc_int32_t cp = 0;
-			const utf8proc_uint8_t* pstring = reinterpret_cast<const utf8proc_uint8_t*>(&utf8.front());
-			utf8proc_ssize_t size = utf8.size();
+			const utf8proc_uint8_t* pstring = reinterpret_cast<const utf8proc_uint8_t*>(&str.front());
+			utf8proc_ssize_t size = str.size();
 			utf8proc_ssize_t n(0);
 			while ((n = utf8proc_iterate(pstring, size, &cp)) > 0)
 			{
@@ -160,36 +165,38 @@ namespace ftts
 		JSProcessor(const char* args)
 			: eos_(0xffffffff)
 			, tagger_(MeCab::createTagger(args))
-			, punctuation_{ 0x2e,0x2c,0x3001,0x3002,0xff01,0xff1f,0x21,0x3f }											// ".,、。！？!?"
-			, cleaner_{ 0x20,0x3000,0x300c,0x300d,0x300e,0x300f,0x3f,0x3010,0x3011,0xff08,0xff09,0x28,0x29 }	// " 　「」『』・【】（）()"
-			, normalize_{
-				{{0x301C}, {0x30FC}},				// replace('〜', 'ー')
-				{{0xFF5E}, {0x30FC}},				// replace('～', 'ー')
-				{{0x2019}, {0x27}},				// replace("’", "'")
-				{{0x201D}, {0x22}},				// replace('”', '"')
-				{{0x201C}, {0x60, 0x60}},			// replace('“', '``')
-				{{0x2D7}, {0x2D}},				// replace('˗', '-')
-				{{0x58A}, {0x2D}},				// replace('֊', '-')
-				{{0x2010}, {0x2D}},				// replace('‐', '-')
-				{{0x2011}, {0x2D}},				// replace('‑', '-')
-				{{0x2012}, {0x2D}},				// replace('‒', '-')
-				{{0x2013}, {0x2D}},				// replace('–', '-')
-				{{0x2043}, {0x2D}},				// replace('⁃', '-')
-				{{0x207B}, {0x2D}},				// replace('⁻', '-')
-				{{0x208B}, {0x2D}},				// replace('₋', '-')
-				{{0x2212}, {0x2D}},				// replace('−', '-')
-				{{0xFE63}, {0x30FC}},				// replace('﹣', 'ー')
-				{{0xFF0D}, {0x30FC}},				// replace('－', 'ー')
-				{{0x2014}, {0x30FC}},				// replace('—', 'ー')
-				{{0x2015}, {0x30FC}},				// replace('―', 'ー')
-				{{0x2501}, {0x30FC}},				// replace('━', 'ー')
-				{{0x2500}, {0x30FC}},				// replace('─', 'ー')
-				{{0x2C}, {0x3001}},				// replace(',', '、')
-				{{0x2E}, {0x3002}},				// replace('.', '。')
-				{{0xFF0C}, {0x3001}},				// replace('，', '、')
-				{{0xFF0E}, {0x3002}},				// replace('．', '。')
-				{{0x21}, {0xFF01}},				// replace('!', '！')
-				{{0x3F}, {0xFF01}}}				// replace('?', '？')
+			, punctuation_{ 0x2e,0x2c,0x3001,0x3002,0xff01,0xff1f,0x21,0x3f }	 // ".,、。！？!?"
+			, cleaner_{ 0x20,0x3000,0x300c,0x300d,0x300e,0x300f,0x3f,0x3010,0x3011,0xff08,0xff09,0x28,0x29 } // " 　「」『』・【】（）()"
+			, normalize_
+			{
+				{{0x301C}, {0x30FC}},			// replace('〜', 'ー')
+				{{0xFF5E}, {0x30FC}},			// replace('～', 'ー')
+				{{0x2019}, {0x27}},			// replace("’", "'")
+				{{0x201D}, {0x22}},			// replace('”', '"')
+				{{0x201C}, {0x60, 0x60}},		// replace('“', '``')
+				{{0x2D7}, {0x2D}},			// replace('˗', '-')
+				{{0x58A}, {0x2D}},			// replace('֊', '-')
+				{{0x2010}, {0x2D}},			// replace('‐', '-')
+				{{0x2011}, {0x2D}},			// replace('‑', '-')
+				{{0x2012}, {0x2D}},			// replace('‒', '-')
+				{{0x2013}, {0x2D}},			// replace('–', '-')
+				{{0x2043}, {0x2D}},			// replace('⁃', '-')
+				{{0x207B}, {0x2D}},			// replace('⁻', '-')
+				{{0x208B}, {0x2D}},			// replace('₋', '-')
+				{{0x2212}, {0x2D}},			// replace('−', '-')
+				{{0xFE63}, {0x30FC}},			// replace('﹣', 'ー')
+				{{0xFF0D}, {0x30FC}},			// replace('－', 'ー')
+				{{0x2014}, {0x30FC}},			// replace('—', 'ー')
+				{{0x2015}, {0x30FC}},			// replace('―', 'ー')
+				{{0x2501}, {0x30FC}},			// replace('━', 'ー')
+				{{0x2500}, {0x30FC}},			// replace('─', 'ー')
+				{{0x2C}, {0x3001}},			// replace(',', '、')
+				{{0x2E}, {0x3002}},			// replace('.', '。')
+				{{0xFF0C}, {0x3001}},			// replace('，', '、')
+				{{0xFF0E}, {0x3002}},			// replace('．', '。')
+				{{0x21}, {0xFF01}},			// replace('!', '！')
+				{{0x3F}, {0xFF01}}				// replace('?', '？')
+			}
 		{
 			// pad 
 			int32_t seq(1);
