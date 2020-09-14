@@ -189,7 +189,7 @@ namespace ftts
 				{{0xFF0C}, {0x3001}},				// replace('，', '、')
 				{{0xFF0E}, {0x3002}},				// replace('．', '。')
 				{{0x21}, {0xFF01}},				// replace('!', '！')
-				{{0x3F}, {0xFF01}}}				// replace('?', '？	')
+				{{0x3F}, {0xFF01}}}				// replace('?', '？')
 		{
 			// pad 
 			int32_t seq(1);
