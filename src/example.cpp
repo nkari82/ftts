@@ -1,4 +1,4 @@
-#include "ftts.h"
+ï»¿#include "ftts.h"
 
 using namespace ftts;
 
@@ -6,9 +6,8 @@ int main()
 {
 	IProcessor::Ptr ptr = IProcessor::Create("-rD:/Github/unidic-mecab-2.1.2/mecabrc");
 	std::vector<int32_t> seq;
-	ptr->ToSeq("ªÞª¿ÔÔÞÑªÎªèª¦ªËçéÓÞÙ¥èÝªÈû¼ªÐªìªëñ«é©ªÊÙ¥èÝªÎñéäçªËÛÕªµªìªëª³ªÈªâÒýª¤¡£", seq);
-	//ptr->ToSeq("¾È³çÇÏ¼¼¿ä", seq);
-	
-	
+	ptr->ToSeq("ã¾ãŸæ±å¯ºã®ã‚ˆã†ã«äº”å¤§æ˜ŽçŽ‹ã¨å‘¼ã°ã‚Œã‚‹ä¸»è¦ãªæ˜ŽçŽ‹ã®ä¸­å¤®ã«é…ã•ã‚Œã‚‹ã“ã¨ã‚‚å¤šã„ã€‚", seq);
+	//ptr->ToSeq("ì•ˆë…•í•˜ì„¸ìš”", seq);
+		
 	return 0;
 }
