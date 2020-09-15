@@ -21,10 +21,6 @@ add_subdirectory(./thirdparty/mecab/mecab)
 list(APPEND EXTRA_LIBS libmecab)
 list(APPEND EXTRA_INCLUDES "./thirdparty/mecab/mecab/src")
 
-add_subdirectory(./thirdparty/uchardet)
-list(APPEND EXTRA_LIBS libuchardet)
-list(APPEND EXTRA_INCLUDES "./thirdparty/uchardet/src")
-
 add_subdirectory(./thirdparty/utf8proc)
 list(APPEND EXTRA_LIBS utf8proc)
 list(APPEND EXTRA_INCLUDES "./thirdparty/utf8proc")

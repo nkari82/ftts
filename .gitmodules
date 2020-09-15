@@ -10,7 +10,3 @@
 	path = thirdparty/libiconv
 	url = https://github.com/nkari82/libiconv.git
 	branch = master
-[submodule "thirdparty/uchardet"]
-	path = thirdparty/uchardet
-	url = https://github.com/nkari82/uchardet.git
-	branch = master
