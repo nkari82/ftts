@@ -265,7 +265,7 @@ namespace ftts
 					if (count == 2)
 					{
 						// keep punctuation
-						if (1)
+						if (0)
 						{
 							bool found(false);
 							for (auto& p : punctuation_)
