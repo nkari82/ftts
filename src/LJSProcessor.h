@@ -1,9 +1,14 @@
 #pragma once
 
+class PhonetisaurusScript;
+
 namespace ftts
 {
 	class LJSProcessor : public Processor
 	{
+	private:
+		std::shared_ptr<PhonetisaurusScript> script_;
+
 	public:
 		LJSProcessor(const char* args);
 

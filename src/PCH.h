@@ -11,7 +11,6 @@
 #include <iconv.h>
 #include <utf8proc.h>
 #include <mecab.h> // jpn
-#include <include/PhonetisaurusScript.h> // eng
 #include <string>
 #include <cstring>
 #include <list>
