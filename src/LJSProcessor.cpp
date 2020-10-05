@@ -1,4 +1,5 @@
 #include "PCH.h"
+#include <include/PhonetisaurusScript.h> // eng
 
 namespace ftts
 {

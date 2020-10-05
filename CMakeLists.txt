@@ -14,6 +14,7 @@ option(BUILD_BINARY FORCE OFF)
 option(BUILD_SHARED_LIBS FORCE OFF)
 
 set(ICONV_INCLUDE_DIRS  "${ftts_BINARY_DIR}/thirdparty/libiconv")
+set(OPENFST_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/thirdparty/openfst/src/include")
 
 add_subdirectory(./thirdparty/libiconv)
 list(APPEND EXTRA_LIBS libiconv)
@@ -26,6 +27,15 @@ list(APPEND EXTRA_INCLUDES "./thirdparty/mecab/mecab/src")
 add_subdirectory(./thirdparty/utf8proc)
 list(APPEND EXTRA_LIBS utf8proc)
 list(APPEND EXTRA_INCLUDES "./thirdparty/utf8proc")
+
+add_subdirectory(./thirdparty/openfst)
+list(APPEND EXTRA_LIBS fst)
+list(APPEND EXTRA_INCLUDES "./thirdparty/openfst/src/include")
+
+add_subdirectory(./thirdparty/Phonetisaurus)
+list(APPEND EXTRA_LIBS phonetisaurus)
+list(APPEND EXTRA_INCLUDES "./thirdparty/Phonetisaurus/src")
+list(APPEND EXTRA_INCLUDES "./thirdparty/Phonetisaurus/src/3rdparty/utfcpp")
 
 add_library(ftts SHARED 
 	./include/ftts.h

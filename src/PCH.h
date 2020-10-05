@@ -1,3 +1,4 @@
+#pragma once
 #define LIBICONV_STATIC
 #define MECAB_STATIC
 
@@ -9,7 +10,8 @@
 #include <cassert>
 #include <iconv.h>
 #include <utf8proc.h>
-#include <mecab.h>
+#include <mecab.h> // jpn
+#include <include/PhonetisaurusScript.h> // eng
 #include <string>
 #include <cstring>
 #include <list>
