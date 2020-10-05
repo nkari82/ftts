@@ -13,6 +13,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(BUILD_BINARY FORCE OFF)
 option(BUILD_SHARED_LIBS FORCE OFF)
 
+set(ICONV_INCLUDE_DIRS  "${ftts_BINARY_DIR}/thirdparty/libiconv")
+
 add_subdirectory(./thirdparty/libiconv)
 list(APPEND EXTRA_LIBS libiconv)
 list(APPEND EXTRA_INCLUDES "${ftts_BINARY_DIR}/thirdparty/libiconv")
