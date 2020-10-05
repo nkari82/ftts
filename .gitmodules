@@ -10,3 +10,11 @@
 	path = thirdparty/libiconv
 	url = https://github.com/nkari82/libiconv.git
 	branch = master
+[submodule "thirdparty/Phonetisaurus"]
+	path = thirdparty/Phonetisaurus
+	url = https://github.com/nkari82/Phonetisaurus.git
+	branch = master
+[submodule "thirdparty/openfst"]
+	path = thirdparty/openfst
+	url = https://github.com/nkari82/openfst.git
+	branch = master
