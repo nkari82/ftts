@@ -27,9 +27,21 @@ add_subdirectory(./thirdparty/utf8proc)
 list(APPEND EXTRA_LIBS utf8proc)
 list(APPEND EXTRA_INCLUDES "./thirdparty/utf8proc")
 
-add_library(ftts STATIC src/ftts.cpp)
+add_library(ftts SHARED 
+	./include/ftts.h
+	./src/ftts.cpp
+	./src/Processor.h
+	./src/Processor.cpp
+	./src/JSProcessor.h
+	./src/JSProcessor.cpp
+	./src/LJSProcessor.h
+	./src/LJSProcessor.cpp
+	./src/PCH.h
+	./src/PCH.cpp)
+
 target_include_directories(ftts PUBLIC ./include PRIVATE ./src ${EXTRA_INCLUDES})
+target_link_libraries (ftts LINK_PUBLIC ${EXTRA_LIBS})
 
 add_executable (example src/example.cpp)
 target_include_directories(example PRIVATE ./include ./src)
-target_link_libraries (example LINK_PUBLIC ftts ${EXTRA_LIBS})
+target_link_libraries (example LINK_PUBLIC ftts)

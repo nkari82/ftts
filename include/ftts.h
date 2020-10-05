@@ -2,9 +2,19 @@
 #include <memory>
 #include <vector>
 
+#if defined(_WIN32)
+#if defined(ftts_EXPORTS)
+#define FTTS_EXPORT_DLL __declspec(dllexport)
+#else
+#define FTTS_EXPORT_DLL __declspec(dllimport)
+#endif
+#else
+#define FTTS_EXPORT_DLL
+#endif
+
 namespace ftts
 {
-	class IProcessor
+	class FTTS_EXPORT_DLL IProcessor
 	{
 	public:
 		using Ptr = std::shared_ptr<IProcessor>;
