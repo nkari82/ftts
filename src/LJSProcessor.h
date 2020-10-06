@@ -4,11 +4,12 @@ class PhonetisaurusScript;
 
 namespace ftts
 {
-	// Copyright  https://github.com/ZDisket
 	class LJSProcessor : public Processor
 	{
 	private:
 		std::shared_ptr<PhonetisaurusScript> script_;
+		int32_t sil_;
+		int32_t eos_;
 
 	public:
 		LJSProcessor(const char* args);

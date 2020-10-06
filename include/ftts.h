@@ -14,6 +14,12 @@
 
 namespace ftts
 {
+	enum class Langauge
+	{
+		JPN,		// use mecab dictionary
+		ENG		// use g2p dictionary
+	};
+
 	class FTTS_EXPORT_DLL IProcessor
 	{
 	public:
@@ -21,6 +27,6 @@ namespace ftts
 		virtual ~IProcessor() = default;
 		virtual void ToSeq(const char* text, std::vector<int32_t>& seq, const char* enc = nullptr) = 0;
 
-		static Ptr Create(const char* args = nullptr, const char* processor = nullptr);
+		static Ptr Create(const Langauge lang, const char* args);
 	};
 }

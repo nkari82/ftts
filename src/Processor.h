@@ -17,7 +17,6 @@ namespace ftts
 		virtual ~Processor();
 
 		void ToUTF8(std::string& out, const char* text, const char* enc = nullptr);
-
 		void Replace(std::string& message, std::string& pattern, std::string& replace);
 	};
 }

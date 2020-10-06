@@ -179,5 +179,4 @@ namespace ftts
 
 		seq.emplace_back(eos_);
 	}
-
 }

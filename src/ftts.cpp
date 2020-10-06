@@ -3,13 +3,17 @@
 namespace ftts
 {
 
-	IProcessor::Ptr IProcessor::Create(const char* args, const char* processor)
+	IProcessor::Ptr IProcessor::Create(const Langauge lang, const char* args)
 	{
-		if (processor != nullptr)
+		switch (lang)
 		{
-			if (std::strcmp(processor, "ljs") == 0)
-				return std::make_shared<LJSProcessor>(args);
+		case Langauge::JPN:
+			return std::make_shared<JSProcessor>(args);
+		case Langauge::ENG:
+			return std::make_shared<LJSProcessor>(args);
+		default:
+			assert(false);
 		}
-		return std::make_shared<JSProcessor>(args);
+		return nullptr;
 	}
 }

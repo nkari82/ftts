@@ -3,18 +3,43 @@
 #include <include/PhonetisaurusScript.h>
 #pragma warning(pop)
 
+// Copyright  https://github.com/ZDisket
 
 namespace ftts
 {
+	const static std::string punctuation = ",.-;";
+	const static std::string capitals = "QWERTYUIOPASDFGHJKLZXCVBNM";
+	const static std::string lowercase = "qwertyuiopasdfghjklzxcvbnm";
+	const static std::string misc = "'";
+
+	const static std::vector<std::string> first14 = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen" };
+	const static std::vector<std::string> prefixes = { "twen", "thir", "for", "fif", "six", "seven", "eigh", "nine" };
+
+
+	const static std::unordered_map<std::string, int32_t> Phonemes =
+	{ 
+		{"AA",64}, {"AA0",65}, {"AA1",66}, {"AA2",67}, {"AE",68}, {"AE0",69}, {"AE1",70}, {"AE2",71}, {"AH",72}, {"AH0",73}, 
+		{"AH1",74}, {"AH2",75}, {"AO",76}, {"AO0",77}, {"AO1",78}, {"AO2",79}, {"AW",80}, {"AW0",81}, {"AW1",82}, {"AW2",83},
+		{"AY",84}, {"AY0",85}, {"AY1",86}, {"AY2",87}, {"B",88}, {"CH",89}, {"D",90}, {"DH",91}, {"EH",92}, {"EH0",93},
+		{"EH1",94}, {"EH2",95}, {"ER",96}, {"ER0",97}, {"ER1",98}, {"ER2",99}, {"EY",100}, {"EY0",101}, {"EY1",102}, {"EY2",103},
+		{"F",104}, {"G",105}, {"HH",106}, {"IH",107}, {"IH0",108}, {"IH1",109}, {"IH2",110}, {"IY",111}, {"IY0",112}, {"IY1",113},
+		{"IY2",114}, {"JH",115}, {"K",116}, {"L",117}, {"M",118}, {"N",119}, {"NG",120}, {"OW",121}, {"OW0",122}, {"OW1",123},
+		{"OW2",124}, {"OY",125}, {"OY0",126}, {"OY1",127}, {"OY2",128}, {"P",129}, {"R",130}, {"S",131}, {"SH",132}, {"T",133},
+		{"TH",134}, {"UH",135}, {"UH0",136}, {"UH1",137}, {"UH2",138}, {"UW",139}, {"UW0",140}, {"UW1",141}, {"UW2",142}, {"V",143},
+		{"W",144}, {"Y",145}, {"Z",146}, {"ZH",147}, {"SIL",148}, {"END",149}
+	};
 
 	LJSProcessor::LJSProcessor(const char* args)
 	{
-		//script_ = std::make_shared<PhonetisaurusScript>(std::string(args));
+		if (args == nullptr) return;
+
+		script_ = std::make_shared<PhonetisaurusScript>(std::string(args));
+		sil_ = Phonemes.find("SIL")->second;
+		eos_ = Phonemes.find("END")->second;
 	}
 
 	LJSProcessor::~LJSProcessor()
-	{
-	}
+	{}
 
 	void LJSProcessor::ToSeq(const char* text, std::vector<int32_t>& seq, const char* enc)
 	{
@@ -22,6 +47,7 @@ namespace ftts
 		Tokenize(Words, text);
 		
 		if (script_ == nullptr) return;
+
 		std::string Assemble = "";
 		for (size_t w = 0; w < Words.size(); w++)
 		{
@@ -49,13 +75,32 @@ namespace ftts
 		if (Assemble.back() == ' ')
 			Assemble.pop_back();
 
+		// for test
+		std::cout << Assemble << std::endl;
+
+		// phonome to ids
+		seq.reserve(Assemble.size());
+
+		std::stringstream ss(Assemble);
+		std::string Pho;
+		while (std::getline(ss, Pho, ' '))
+		{
+			if (Pho.empty()) continue;
+
+			int32_t id = 0;
+
+			auto it = Phonemes.find(Pho);
+			if (it != Phonemes.end())
+				seq.emplace_back(it->second);
+			else
+				std::cerr << "WARNING: Unknown phoneme " << Pho << std::endl;
+		}
+
+		seq.emplace_back(eos_);
 	}
 
 	std::string LJSProcessor::IntToStr(int32_t number)
 	{
-		const static std::vector<std::string> first14 = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen" };
-		const static std::vector<std::string> prefixes = { "twen", "thir", "for", "fif", "six", "seven", "eigh", "nine" };
-
 		if (number < 0) return "minus " + IntToStr(-number);
 
 		if (number <= 14)
@@ -122,11 +167,6 @@ namespace ftts
 
 	void LJSProcessor::Tokenize(std::vector<std::string>& OutTokens, const std::string& InTxt)
 	{
-		const static std::string punctuation = ",.-;";
-		const static std::string capitals = "QWERTYUIOPASDFGHJKLZXCVBNM";
-		const static std::string lowercase = "qwertyuiopasdfghjklzxcvbnm";
-		const static std::string misc = "'";
-
 		std::vector<std::string> DelimitedTokens;
 		std::stringstream ss(InTxt);
 		std::string col;
