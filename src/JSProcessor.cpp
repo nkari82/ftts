@@ -7,8 +7,8 @@ namespace ftts
 		, empty_("")
 		, punctuation_
 	{
-		b1(0x2e), // "."
-		b1(0x2c), // ","
+		b1(0x2d), // "-"
+		b3(0xe3,0x83,0xbc), // "ー"
 		b3(0xe3,0x80,0x81), // "、"
 		b3(0xe3,0x80,0x82), // "。"
 		b3(0xef,0xbc,0x81), // "！"
@@ -137,23 +137,20 @@ namespace ftts
 				if (count == 2)
 				{
 					// keep punctuation
-					if (0)
+#if 0
+					bool found(false);
+					for (auto& p : punctuation_)
 					{
-						bool found(false);
-						for (auto& p : punctuation_)
+						if (!column[0].compare(p.c_str()))
 						{
-							if (!column[0].compare(p.c_str()))
-							{
-								found = true;
-								break;
-							}
+							found = true;
+							break;
 						}
-						utf8.append(found ? column[0] : column[1]);
 					}
-					else
-					{
-						utf8.append(column[1].empty() ? column[0] : column[1]);
-					}
+					utf8.append(found ? column[0] : column[1]);
+#else
+					utf8.append(column[1].empty() ? column[0] : column[1]);
+#endif
 				}
 			}
 		}
