@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <string>
 
 #if defined(_WIN32)
 #if defined(ftts_EXPORTS)
@@ -27,6 +28,6 @@ namespace ftts
 		virtual ~IProcessor() = default;
 		virtual void ToSeq(const char* text, std::vector<int32_t>& seq, const char* enc = nullptr) = 0;
 
-		static Ptr Create(const Langauge lang, const char* args);
+		static Ptr Create(const Langauge lang, const std::vector<std::string>& args);
 	};
 }

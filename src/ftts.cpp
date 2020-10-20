@@ -3,7 +3,7 @@
 namespace ftts
 {
 
-	IProcessor::Ptr IProcessor::Create(const Langauge lang, const char* args)
+	IProcessor::Ptr IProcessor::Create(const Langauge lang, const std::vector<std::string>& args)
 	{
 		switch (lang)
 		{

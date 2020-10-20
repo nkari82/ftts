@@ -16,7 +16,7 @@ namespace ftts
 		std::vector<std::pair<std::string, std::string>> normalize_;
 
 	public:
-		JSProcessor(const char* args);
+		JSProcessor(const std::vector<std::string>& args);
 
 		virtual ~JSProcessor();
 

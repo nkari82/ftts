@@ -2,13 +2,13 @@
 
 namespace ftts
 {
-	JSProcessor::JSProcessor(const char* args) : eos_(0xffffffff)
-		, tagger_(MeCab::createTagger(args))
+	JSProcessor::JSProcessor(const std::vector<std::string>& args) : eos_(0xffffffff)
+		, tagger_(MeCab::createTagger(args[0].c_str()))
 		, empty_("")
 		, punctuation_
 	{
 		b1(0x2d), // "-"
-		b3(0xe3,0x83,0xbc), // "ー"
+		b1(0x2c), // ","
 		b3(0xe3,0x80,0x81), // "、"
 		b3(0xe3,0x80,0x82), // "。"
 		b3(0xef,0xbc,0x81), // "！"
@@ -67,27 +67,41 @@ namespace ftts
 
 		// pad 
 		int32_t seq(1);
-
-		for (size_t i = 0; i < punctuation_.size(); i++, seq++)
+		for (size_t i = 0; i < punctuation_.size(); i++)
 		{
 			const utf8proc_uint8_t* pstring = reinterpret_cast<const utf8proc_uint8_t*>(&punctuation_[i].front());
 			utf8proc_ssize_t size = punctuation_[i].size();
 			utf8proc_int32_t cp = 0;
 			for (utf8proc_ssize_t n = 0; (n = utf8proc_iterate(pstring, size, &cp)) > 0; pstring += n, size -= n)
-				symbols_.emplace(std::make_pair(cp, seq));
+			{
+				assert(symbols_.find(cp) == symbols_.end());
+				symbols_.emplace(std::make_pair(cp, seq++));		// 8
+			}
 		}
 
+		// https://jrgraphix.net/r/Unicode/30A0-30FF
 		// katakana ( U+30A0..U+30FF ), hiragana ( U+3040..U+309F )
-		for (int32_t cp = 0x30A0; cp <= 0x30FF; cp++, seq++)
-			symbols_.emplace(std::make_pair(cp, seq));
+		
+		for (int32_t cp = 0x30A0; cp < 0x30FF; cp++)
+		{
+			assert(symbols_.find(cp) == symbols_.end());
+			symbols_.emplace(std::make_pair(cp, seq++));		// 95
+		}
 
 		// alphabet
-		for (int32_t cp = 0x0041; cp <= 0x007a; cp++, seq++)
-			symbols_.emplace(std::make_pair(cp, seq));
+		for (int32_t cp = 0x0041; cp < 0x007b; cp++)
+		{
+			if(cp > 0x5a && cp < 0x61 ) continue;
+			assert(symbols_.find(cp) == symbols_.end());
+			symbols_.emplace(std::make_pair(cp, seq++));		// 52
+		}
 
 		// numbers
-		for (int32_t cp = 0x0030; cp <= 0x0039; cp++, seq++)
-			symbols_.emplace(std::make_pair(cp, seq));
+		for (int32_t cp = 0x30; cp < 0x3a; cp++)
+		{
+			assert(symbols_.find(cp) == symbols_.end());
+			symbols_.emplace(std::make_pair(cp, seq++));		// 10
+		}
 
 		// eos
 		eos_ = seq;

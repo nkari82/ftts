@@ -29,11 +29,11 @@ namespace ftts
 		{"W",144}, {"Y",145}, {"Z",146}, {"ZH",147}, {"SIL",148}, {"END",149}
 	};
 
-	LJSProcessor::LJSProcessor(const char* args)
+	LJSProcessor::LJSProcessor(const std::vector<std::string>& args)
 	{
-		if (args == nullptr) return;
+		if (args.empty()) return;
 
-		script_ = std::make_shared<PhonetisaurusScript>(std::string(args));
+		script_ = std::make_shared<PhonetisaurusScript>(args[0]);
 		sil_ = Phonemes.find("SIL")->second;
 		eos_ = Phonemes.find("END")->second;
 	}

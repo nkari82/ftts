@@ -12,7 +12,7 @@ namespace ftts
 		int32_t eos_;
 
 	public:
-		LJSProcessor(const char* args);
+		LJSProcessor(const std::vector<std::string>& args);
 
 		virtual ~LJSProcessor();
 
