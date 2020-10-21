@@ -1,5 +1,5 @@
 #pragma once
-#define LIBICONV_STATIC
+#define ICONV_STATIC
 #define MECAB_STATIC
 
 #ifndef UTF8PROC_STATIC
@@ -19,6 +19,7 @@
 #include <cctype>
 #include <sstream>
 #include <array>
+#include <regex>
 
 #define b1(a) {(char)a}
 #define b2(a, b) {(char)a, (char)b}
@@ -42,14 +43,16 @@
 #define b20(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, s, t, u) {(char)a, (char)b, (char)c, (char)d, (char)e, (char)f, (char)g, (char)h, (char)i, (char)j, (char)k, (char)l, (char)m, (char)n, (char)o, (char)p, (char)q, (char)s, (char)t, (char)u}
 
 
-//template<size_t N>
-//constexpr std::array<char,N> Convert(const std::array<int, N>& utf8)
-//{
-//	std::array<char, N> ret;
-//	for (int i = 0; i < N; ++i)
-//		ret[i] = (char)utf8[i];
-//	return ret;
-//}
+
+//constexpr std::string Convert(const std::array<int, N>& utf8)
+template<size_t N>
+constexpr std::string Convert(int (&arr)[N])
+{
+	std::string ret;
+	for (int i = 0; i < N; ++i)
+		ret.push_back((char)arr[i]);
+	return ret;
+}
 
 #include "ftts.h"
 #include "Processor.h"

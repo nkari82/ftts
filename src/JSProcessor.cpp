@@ -141,7 +141,7 @@ namespace ftts
 		b3(0xe3,0x80,0x8d), // "」"
 		b3(0xe3,0x80,0x8e), // "『"
 		b3(0xe3,0x80,0x8f), // "』"
-		b1(0x3f), // "・"
+		b3(0xe3,0x83,0xbb), // "・"
 		b3(0xe3,0x80,0x90), // "【"
 		b3(0xe3,0x80,0x91), // "】"
 		b3(0xef,0xbc,0x88), // "（"
@@ -177,12 +177,14 @@ namespace ftts
 		{b3(0xef,0xbc,0x8c), b3(0xe3,0x80,0x81)}, // replace('，', '、')
 		{b3(0xef,0xbc,0x8e), b3(0xe3,0x80,0x82)}, // replace('．', '。')
 		{b1(0x21), b3(0xef,0xbc,0x81)}, // replace('!', '！')
-		{b1(0x3f), b3(0xef,0xbc,0x81)}	// replace('?', '？')
+		{b1(0x3f), b3(0xef,0xbc,0x9f)},	// replace('?', '？')
 	}
 	{
+		std::string temp{ "\xEF\xBC\x9F" };
 		// generate symbols (UTF32)
 
-		//std::string test{ Convert({0xef,0xbc,0x81}) };
+		//std::string temp = Convert(0xef,0xbc,0x81);
+		//std::string str(arr);
 		//auto temp = Convert({ 0xef,0xbc,0x81 });
 		// pad 
 		int32_t seq(1);
@@ -200,7 +202,7 @@ namespace ftts
 
 		// https://jrgraphix.net/r/Unicode/30A0-30FF
 		// katakana ( U+30A0..U+30FF ), hiragana ( U+3040..U+309F )
-		
+
 		for (int32_t cp = 0x30A0; cp < 0x30FF; cp++)
 		{
 			assert(symbols_.find(cp) == symbols_.end());
@@ -210,7 +212,7 @@ namespace ftts
 		// alphabet
 		for (int32_t cp = 0x0041; cp < 0x007b; cp++)
 		{
-			if(cp > 0x5a && cp < 0x61 ) continue;
+			if (cp > 0x5a && cp < 0x61) continue;
 			assert(symbols_.find(cp) == symbols_.end());
 			symbols_.emplace(std::make_pair(cp, seq++));		// 52
 		}
@@ -241,9 +243,7 @@ namespace ftts
 		for (auto& c : cleaner_)
 			Replace(utf8, c, empty_);
 
-		// english
-		for (auto& pair : e2k)
-			Replace(utf8, pair.first, pair.second);
+		std::cout << utf8 << std::endl;
 
 		// normalize
 		for (auto& pair : normalize_)
@@ -256,49 +256,72 @@ namespace ftts
 			free(buffer);
 		}
 
-		// pronunciation
-		const char* result = tagger_->parse(utf8.c_str(), utf8.size());
-		if (result)
+		// tokenizer
+		std::vector<std::string> tokens;
+		std::string token;
+		for (auto& c : utf8)
 		{
-			utf8.clear();
-
-			std::istringstream input(result);
-			std::string line;
-
-			while (std::getline(input, line))
+			bool isalpha = std::isalpha(c);
+			bool isdigit = std::isdigit(c);
+			bool ispunct = std::ispunct(c);
+			char p = token.empty() ? 0 : token.back();
+			if ((isalpha && !std::isalpha(p))
+				|| (isdigit && !std::isdigit(p))
+				|| (ispunct && !std::ispunct(p))) // continues
 			{
-				std::istringstream row(line);
-				std::string column[2];
-
-				size_t count;
-				for (count = 0; count < 2 && std::getline(row, column[count], '\t'); ++count) {}
-				//std::cout << line << std::endl;
-
-				if (count == 2)
+				if (token.empty())
 				{
-					// keep punctuation
-#if 0
-					bool found(false);
-					for (auto& p : punctuation_)
-					{
-						if (!column[0].compare(p.c_str()))
-						{
-							found = true;
-							break;
-						}
-					}
-					utf8.append(found ? column[0] : column[1]);
-#else
-					utf8.append(column[1].empty() ? column[0] : column[1]);
-#endif
+					tokens.emplace_back(std::string{ c });
+					continue;
+				}
+				else
+				{
+					tokens.emplace_back(token);
+					token.clear();
 				}
 			}
+
+			token.push_back(c);
 		}
-		else
+		tokens.emplace_back(token);
+
+		utf8.clear();
+
+		for (auto& token : tokens)
 		{
-			// hiragana to katakana
-			for (auto& pair : h2k)
-				Replace(utf8, pair.first, pair.second);
+			if (std::isalpha(token.front()))
+			{
+				for (auto& pair : e2k)
+					Replace(token, pair.first, pair.second);
+				utf8.append(token);
+			}
+			else
+			{
+				// pronunciation
+				const char* result = tagger_->parse(token.c_str(), token.size());
+				if (result)
+				{
+					std::istringstream input(result);
+					std::string line;
+
+					while (std::getline(input, line))
+					{
+						std::istringstream row(line);
+						std::string column[2];
+
+						size_t count;
+						for (count = 0; count < 2 && std::getline(row, column[count], '\t'); ++count) {}
+						//std::cout << line << std::endl;
+
+						if (count == 2)
+							utf8.append(column[1].empty() ? column[0] : column[1]);
+					}
+				}
+				else
+				{
+					utf8.append(token);
+				}
+			}
 		}
 
 		// for test

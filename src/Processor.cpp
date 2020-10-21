@@ -14,8 +14,13 @@ namespace ftts
 
 	void Processor::ToUTF8(std::string& out, const char* text, const char* enc /*= nullptr*/)
 	{
-		size_t length = std::strlen(text);
+		if (enc == nullptr)
+		{
+			out = text;
+			return;
+		}
 
+		size_t length = std::strlen(text);
 		size_t bufsize(256);
 		out.resize(bufsize);
 
