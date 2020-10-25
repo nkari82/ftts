@@ -17,6 +17,8 @@ namespace ftts
 		{"Whats", "\xE3\x82\xA6\xE3\x82\xA9\xE3\x83\x84"}, // ウォツ
 		{"App", "\xE3\x82\xA8\xE3\x83\xBC\xE3\x83\x83\xE3\x83\x83\xE3\x83\x97\x20"}, // エーッップ 
 		{"iptime", "\xE3\x82\xA4\xE3\x83\x97\xE3\x83\x86\xE3\x82\xA3\xE3\x83\x9F\xE3\x83\xBC"}, // イプティミー
+		{"IPTIME", "\xE3\x82\xA4\xE3\x83\x97\xE3\x83\x86\xE3\x82\xA3\xE3\x83\x9F\xE3\x83\xBC"}, // イプティミー
+		{"PARASITE", "\xE3\x83\x91\xE3\x83\xA9\xE3\x82\xB7\xE3\x83\x88"}, // パラシト
 	};
 
 	static std::vector <std::pair<std::string, std::string>> h2k =
@@ -147,7 +149,10 @@ namespace ftts
 		"\xef\xbc\x88", // "（"
 		"\xef\xbc\x89", // "）"
 		"\x28", // "("
-		"\x29" // ")"
+		"\x29", // ")"
+		"\x5B", // [
+		"\x5D", // ]
+		"\x2F" // /
 	}
 		, normalize_
 	{
@@ -177,7 +182,7 @@ namespace ftts
 		{"\xef\xbc\x8c", "\xe3\x80\x81"}, // replace('，', '、')
 		{"\xef\xbc\x8e", "\xE3\x80\x82"}, // replace('．', '。')
 		{"\x21", "\xEF\xBC\x81"}, // replace('!', '！')
-		{"\x3F", "\xEF\xBC\x9F"},	// replace('?', '？')
+		{"\x3F", "\xEF\xBC\x9F"}	// replace('?', '？')
 	}
 	{
 		// generate symbols (UTF32)
@@ -259,10 +264,11 @@ namespace ftts
 			bool isalpha = std::isalpha(c);
 			bool isdigit = std::isdigit(c);
 			bool ispunct = std::ispunct(c);
-			char p = token.empty() ? 0 : token.back();
-			if ((isalpha && !std::isalpha(p))
-				|| (isdigit && !std::isdigit(p))
-				|| (ispunct && !std::ispunct(p))) // continues
+			char p = token.empty() ? c : token.back();
+			if ( c == '\n'
+				|| (isalpha == !std::isalpha(p))
+				|| (isdigit == !std::isdigit(p))
+				|| (ispunct == !std::ispunct(p))) // continues
 			{
 				if (token.empty())
 				{
@@ -274,11 +280,16 @@ namespace ftts
 					tokens.emplace_back(token);
 					token.clear();
 				}
+
+				if( c == '\n' )
+					continue;
 			}
 
 			token.push_back(c);
 		}
-		tokens.emplace_back(token);
+
+		if( !token.empty() )
+			tokens.emplace_back(token);
 
 		utf8.clear();
 
