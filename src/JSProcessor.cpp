@@ -10,13 +10,11 @@ namespace ftts
 		{"Kim", "\xE3\x82\xAD\xE3\x83\xA0"}, // キム
 		{"taek", "\xE3\x82\xBF\xE3\x82\xA8\xE3\x82\xAF"}, // タエク
 		{"woo", "\xE3\x82\xA6\xE3\x83\xBC"}, // ウー
-		{"wi", "\xE3\x82\xA6\xE3\x82\xA3"}, // ウィ
-		{"fi", "\xE3\x83\x95\xE3\x82\xA3"},	// フィ
+		{"WiFi", "\xE3\x82\xA6\xE3\x82\xA3\xE3\x83\x95\xE3\x82\xA3"}, // ウィフィ
 		{"coffee", "\xE3\x82\xB3\xE3\x83\x95\xE3\x82\xA3\xE3\x83\xBC"},		// コフィー
-		{"land", "\xE3\x83\xA9\xE3\x83\xB3\xE3\x83\x89\x20"},	// ランド 
+		{"land", "\xE3\x83\xA9\xE3\x83\xB3\xE3\x83\x89"},	// ランド 
 		{"Whats", "\xE3\x82\xA6\xE3\x82\xA9\xE3\x83\x84"}, // ウォツ
 		{"App", "\xE3\x82\xA8\xE3\x83\xBC\xE3\x83\x83\xE3\x83\x83\xE3\x83\x97\x20"}, // エーッップ 
-		{"iptime", "\xE3\x82\xA4\xE3\x83\x97\xE3\x83\x86\xE3\x82\xA3\xE3\x83\x9F\xE3\x83\xBC"}, // イプティミー
 		{"IPTIME", "\xE3\x82\xA4\xE3\x83\x97\xE3\x83\x86\xE3\x82\xA3\xE3\x83\x9F\xE3\x83\xBC"}, // イプティミー
 		{"PARASITE", "\xE3\x83\x91\xE3\x83\xA9\xE3\x82\xB7\xE3\x83\x88"}, // パラシト
 	};
@@ -121,7 +119,8 @@ namespace ftts
 		{"\xE3\x82\x9f", "\xE3\x83\xBF"}		// ゟ
 	};
 
-	JSProcessor::JSProcessor(const std::vector<std::string>& args) : eos_(0xffffffff)
+	JSProcessor::JSProcessor(const std::vector<std::string>& args)
+		: eos_(0xffffffff)
 		, tagger_(MeCab::createTagger(args[0].c_str()))
 		, empty_("")
 		, punctuation_
@@ -133,12 +132,16 @@ namespace ftts
 		"\xef\xbc\x81", // "！"
 		"\xef\xbc\x9f", // "？"
 		"\x21", // "!"
-		"\x3f" // "?"
+		"\x3f"  // "?"
 	}
 		, cleaner_
 	{
-		"\x20",  // " "
-		"\xe3\x80\x80", // "　"
+		"\x28", // "("
+		"\x29", // ")"
+		"\x5B", // [
+		"\x5D", // ]
+		"\x2F", // /
+		"\x22", // "
 		"\xe3\x80\x8c", // "「"
 		"\xe3\x80\x8d", // "」"
 		"\xe3\x80\x8e", // "『"
@@ -147,12 +150,7 @@ namespace ftts
 		"\xe3\x80\x90", // "【"
 		"\xe3\x80\x91", // "】"
 		"\xef\xbc\x88", // "（"
-		"\xef\xbc\x89", // "）"
-		"\x28", // "("
-		"\x29", // ")"
-		"\x5B", // [
-		"\x5D", // ]
-		"\x2F" // /
+		"\xef\xbc\x89" // "）"
 	}
 		, normalize_
 	{
@@ -261,18 +259,21 @@ namespace ftts
 		std::string token;
 		for (auto& c : utf8)
 		{
+			bool isspace = std::isspace(c);
 			bool isalpha = std::isalpha(c);
 			bool isdigit = std::isdigit(c);
 			bool ispunct = std::ispunct(c);
 			char p = token.empty() ? c : token.back();
-			if ( c == '\n'
-				|| (isalpha == !std::isalpha(p))
-				|| (isdigit == !std::isdigit(p))
-				|| (ispunct == !std::ispunct(p))) // continues
+
+			if ( (isalpha == !std::isalpha(p)) ||
+				(isdigit == !std::isdigit(p)) ||
+				(ispunct == !std::ispunct(p)) ||
+				isspace ) // continues
 			{
 				if (token.empty())
 				{
-					tokens.emplace_back(std::string{ c });
+					if( !isspace ) 
+						tokens.emplace_back(std::string{ c });
 					continue;
 				}
 				else
@@ -281,7 +282,7 @@ namespace ftts
 					token.clear();
 				}
 
-				if( c == '\n' )
+				if (isspace)
 					continue;
 			}
 
