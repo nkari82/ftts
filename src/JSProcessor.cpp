@@ -297,7 +297,7 @@ namespace ftts
 
 		for (auto& token : tokens)
 		{
-			if (std::isalpha(token.front()))
+			if (std::isalpha(token.front(), locale_))
 			{
 				for (auto& pair : e2k)
 					Replace(token, pair.first, pair.second);
