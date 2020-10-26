@@ -120,7 +120,8 @@ namespace ftts
 	};
 
 	JSProcessor::JSProcessor(const std::vector<std::string>& args)
-		: eos_(0xffffffff)
+		: locale_("ja_JP.UTF-8")
+		, eos_(0xffffffff)
 		, tagger_(MeCab::createTagger(args[0].c_str()))
 		, empty_("")
 		, punctuation_
@@ -259,15 +260,15 @@ namespace ftts
 		std::string token;
 		for (auto& c : utf8)
 		{
-			bool isspace = std::isspace(c);
-			bool isalpha = std::isalpha(c);
-			bool isdigit = std::isdigit(c);
-			bool ispunct = std::ispunct(c);
+			bool isspace = std::isspace(c, locale_);
+			bool isalpha = std::isalpha(c, locale_);
+			bool isdigit = std::isdigit(c, locale_);
+			bool ispunct = std::ispunct(c, locale_);
 			char p = token.empty() ? c : token.back();
 
-			if ( (isalpha == !std::isalpha(p)) ||
-				(isdigit == !std::isdigit(p)) ||
-				(ispunct == !std::ispunct(p)) ||
+			if ( (isalpha == !std::isalpha(p, locale_)) ||
+				(isdigit == !std::isdigit(p, locale_)) ||
+				(ispunct == !std::ispunct(p, locale_)) ||
 				isspace ) // continues
 			{
 				if (token.empty())

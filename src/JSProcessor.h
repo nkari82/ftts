@@ -7,6 +7,7 @@ namespace ftts
 	{
 	private:
 		using Symbols = std::unordered_map<int32_t, int32_t>;
+		std::locale locale_;
 		int32_t eos_;
 		Symbols symbols_;
 		MeCab::Tagger* tagger_;
