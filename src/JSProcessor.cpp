@@ -2,6 +2,9 @@
 
 namespace ftts
 {
+	// https://mothereff.in/utf-8
+	// https://onlineutf8tools.com/convert-utf32-to-utf8
+	// https://unicodelookup.com/
 	// https://apps.nolanlawson.com/japanese-name-converter/#?q=Ki
 	static std::vector<std::pair<std::string, std::string>> e2k =
 	{
@@ -292,6 +295,11 @@ namespace ftts
 
 		if( !token.empty() )
 			tokens.emplace_back(token);
+
+		// check punctuation.
+		auto& last = tokens.back();
+		if(!std::ispunct(last.back(), locale_))
+			last += "\xe3\x80\x82";	// 。
 
 		utf8.clear();
 
